@@ -31,6 +31,7 @@ export function UserMessage({ group, messageIdToIndex }: UserMessageProps) {
                   if (
                     isToolResultContentBlock(block) &&
                     block.content &&
+                    Array.isArray(block.content) &&
                     block.content.length > 0
                   ) {
                     // Check ALL content items in the tool result, not just the first one
@@ -90,6 +91,7 @@ export function UserMessage({ group, messageIdToIndex }: UserMessageProps) {
               if (
                 isToolResultContentBlock(block) &&
                 block.content &&
+                Array.isArray(block.content) &&
                 block.content.length > 0
               ) {
                 // Check ALL content items in the tool result, not just the first one

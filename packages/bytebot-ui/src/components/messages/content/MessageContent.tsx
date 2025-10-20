@@ -26,6 +26,7 @@ export function MessageContent({
     if (
       isToolResultContentBlock(block) &&
       block.content &&
+      Array.isArray(block.content) &&
       block.content.some((contentBlock) => isImageContentBlock(contentBlock))
     ) {
       return true;
@@ -53,6 +54,7 @@ export function MessageContent({
 
           {isToolResultContentBlock(block) &&
             !block.is_error &&
+            Array.isArray(block.content) &&
             block.content.map((contentBlock, contentBlockIndex) => {
               if (isImageContentBlock(contentBlock)) {
                 return (
@@ -73,8 +75,9 @@ export function MessageContent({
           {isToolResultContentBlock(block) &&
             !block.is_error &&
             block.tool_use_id === "set_task_status" &&
-            block.content?.[0].type === "text" && (
-              <TextContent block={block.content?.[0]} />
+            Array.isArray(block.content) &&
+            block.content[0]?.type === "text" && (
+              <TextContent block={block.content[0]} />
             )}
         </div>
       ))}

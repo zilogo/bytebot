@@ -13,11 +13,17 @@ export interface ScreenshotData {
  */
 export function extractScreenshots(messages: Message[]): ScreenshotData[] {
   const screenshots: ScreenshotData[] = [];
-  
+
   messages.forEach((message, messageIndex) => {
+    // Defensive check: ensure content is an array
+    if (!Array.isArray(message.content)) {
+      console.warn('Message content is not an array:', message);
+      return;
+    }
+
     message.content.forEach((block, blockIndex) => {
       // Check if this is a tool result block with images
-      if (isToolResultContentBlock(block) && block.content && block.content.length > 0) {
+      if (isToolResultContentBlock(block) && block.content && Array.isArray(block.content) && block.content.length > 0) {
         // Check ALL content items in the tool result, not just the first one
         block.content.forEach((contentItem, contentIndex) => {
           if (isImageContentBlock(contentItem)) {

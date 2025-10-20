@@ -50,6 +50,7 @@ export function AssistantMessage({
                   if (
                     isToolResultContentBlock(block) &&
                     block.content &&
+                    Array.isArray(block.content) &&
                     block.content.length > 0
                   ) {
                     // Check ALL content items in the tool result, not just the first one
@@ -97,6 +98,7 @@ export function AssistantMessage({
                   isToolResultContentBlock(block) &&
                   !block.is_error &&
                   block.content &&
+                  Array.isArray(block.content) &&
                   block.content.length > 0
                 ) {
                   // Check ALL content items in the tool result, not just the first one
