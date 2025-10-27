@@ -29,6 +29,14 @@ app
     const expressApp = express();
     const server = createServer(expressApp);
 
+    // HTTP API proxy for REST endpoints
+    const apiProxy = createProxyMiddleware({
+      target: BYTEBOT_AGENT_BASE_URL,
+      changeOrigin: true,
+      // DO NOT use pathRewrite - it will strip /api when mounted at /api
+      // Instead, ensure the full path including /api is preserved
+    });
+
     // WebSocket proxy for Socket.IO connections to backend
     const tasksProxy = createProxyMiddleware({
       target: BYTEBOT_AGENT_BASE_URL,
@@ -36,7 +44,7 @@ app
       pathRewrite: { "^/api/proxy/tasks": "/socket.io" },
     });
 
-    // Apply HTTP proxies
+    // Apply HTTP proxies - more specific routes first
     expressApp.use("/api/proxy/tasks", tasksProxy);
     expressApp.use("/api/proxy/websockify", (req, res) => {
       console.log("Proxying websockify request");
@@ -48,6 +56,15 @@ app
       vncProxy.web(req, res, {
         target: `${targetUrl.protocol}//${targetUrl.host}`,
       });
+    });
+
+    // General API proxy for REST endpoints (after specific proxies)
+    // When mounted at /api, the middleware receives stripped paths
+    // So we need to prepend /api back
+    expressApp.use("/api", (req, res, next) => {
+      // Prepend /api to the path since Express strips it
+      req.url = "/api" + req.url;
+      apiProxy(req, res, next);
     });
 
     // Handle all other requests with Next.js

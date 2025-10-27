@@ -188,7 +188,8 @@ export class AgentProcessor {
         options: {
           abortController: this.abortController,
           appendSystemPrompt: AGENT_SYSTEM_PROMPT,
-          permissionMode: 'bypassPermissions',
+          // Removed permissionMode: 'bypassPermissions' due to root user restriction
+          // TODO: Re-enable after switching to non-root user in Dockerfile
           mcpServers: {
             desktop: {
               type: 'sse',
@@ -239,7 +240,13 @@ export class AgentProcessor {
                 });
                 break;
             }
-            break;
+            // Task is complete, reset processing flag and exit
+            this.isProcessing = false;
+            this.currentTaskId = null;
+            this.logger.log(
+              `Task processing completed for task ID: ${taskId} with status: ${message.subtype}`,
+            );
+            return;
           }
         }
 
