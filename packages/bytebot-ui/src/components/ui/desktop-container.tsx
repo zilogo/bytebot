@@ -13,6 +13,7 @@ interface DesktopContainerProps {
   viewOnly?: boolean;
   className?: string;
   status?: VirtualDesktopStatus;
+  nativeResolution?: boolean;
 }
 
 export const DesktopContainer: React.FC<DesktopContainerProps> = ({
@@ -21,6 +22,7 @@ export const DesktopContainer: React.FC<DesktopContainerProps> = ({
   viewOnly = false,
   className = "",
   status = "running",
+  nativeResolution = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -86,24 +88,39 @@ export const DesktopContainer: React.FC<DesktopContainerProps> = ({
         <div className="flex items-center gap-2">{children}</div>
       </div>
 
-      <div ref={containerRef} className="flex aspect-[4/3] overflow-hidden">
-        <div
-          style={{
-            width: `${containerSize.width}px`,
-            height: `${containerSize.height}px`,
-            maxWidth: "100%",
-          }}
-        >
-          {screenshot ? (
-            <ScreenshotViewer
-              screenshot={screenshot}
-              className="h-full w-full"
-            />
-          ) : (
-            <VncViewer viewOnly={viewOnly} />
-          )}
+      {nativeResolution ? (
+        <div ref={containerRef} className="flex h-full w-full overflow-auto">
+          <div className="h-full w-full">
+            {screenshot ? (
+              <ScreenshotViewer
+                screenshot={screenshot}
+                className="h-full w-full"
+              />
+            ) : (
+              <VncViewer viewOnly={viewOnly} />
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div ref={containerRef} className="flex aspect-[4/3] overflow-hidden">
+          <div
+            style={{
+              width: `${containerSize.width}px`,
+              height: `${containerSize.height}px`,
+              maxWidth: "100%",
+            }}
+          >
+            {screenshot ? (
+              <ScreenshotViewer
+                screenshot={screenshot}
+                className="h-full w-full"
+              />
+            ) : (
+              <VncViewer viewOnly={viewOnly} />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

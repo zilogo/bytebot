@@ -32,7 +32,7 @@ const statusConfig: Record<VirtualDesktopStatus, StatusConfig> = {
         />
       </span>
     ),
-    text: "Live Desktop View",
+    text: "EOS3 Desktop View",
     gradient: "from-gray-700 to-gray-900",
     subtext: "",
   },
