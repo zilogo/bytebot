@@ -2,7 +2,12 @@ name: bytebot
 
 services:
   bytebot-desktop:
-    image: 172.16.10.3:5000/eos3/bytebot-desktop:202511042216
+    # Build from source
+    build:
+      context: ../packages/
+      dockerfile: bytebotd/Dockerfile
+    # Use pre-built image
+    image: ghcr.io/bytebot-ai/bytebot-desktop:edge
     shm_size: "2g"
     container_name: bytebot-desktop
     restart: unless-stopped
@@ -16,7 +21,7 @@ services:
       - bytebot-network
 
   postgres:
-    image: 172.16.10.3:5000/eos3/postgres:16-alpine
+    image: postgres:16-alpine
     container_name: bytebot-postgres
     restart: unless-stopped
     ports:
@@ -30,9 +35,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  bytebot-agent-cc:
-    image: 172.16.10.3:5000/eos3/bytebot-agent-cc:202511042216
-    container_name: bytebot-agent-cc
+  bytebot-agent:
+    build:
+      context: ../packages/
+      dockerfile: bytebot-agent/Dockerfile
+    # Use pre-built image
+    image: ghcr.io/bytebot-ai/bytebot-agent:edge
+    container_name: bytebot-agent
     restart: unless-stopped
     ports:
       - "9991:9991"
@@ -40,24 +49,32 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/bytebotdb}
       - BYTEBOT_DESKTOP_BASE_URL=${BYTEBOT_DESKTOP_BASE_URL:-http://bytebot-desktop:9990}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - postgres
     networks:
       - bytebot-network
 
   bytebot-ui:
-    image: 172.16.10.3:5000/eos3/bytebot-ui:202511042216
+    build:
+      context: ../packages/
+      dockerfile: bytebot-ui/Dockerfile
+      args:
+        - BYTEBOT_AGENT_BASE_URL=${BYTEBOT_AGENT_BASE_URL:-http://bytebot-agent:9991}
+        - BYTEBOT_DESKTOP_VNC_URL=${BYTEBOT_DESKTOP_VNC_URL:-http://bytebot-desktop:9990/websockify}
+    # Use pre-built image
+    image: ghcr.io/bytebot-ai/bytebot-ui:edge
     container_name: bytebot-ui
     restart: unless-stopped
     ports:
       - "9992:9992"
     environment:
       - NODE_ENV=production
-      - BYTEBOT_AGENT_BASE_URL=${BYTEBOT_AGENT_BASE_URL:-http://bytebot-agent-cc:9991}
+      - BYTEBOT_AGENT_BASE_URL=${BYTEBOT_AGENT_BASE_URL:-http://bytebot-agent:9991}
       - BYTEBOT_DESKTOP_VNC_URL=${BYTEBOT_DESKTOP_VNC_URL:-http://bytebot-desktop:9990/websockify}
     depends_on:
-      - bytebot-agent-cc
+      - bytebot-agent
     networks:
       - bytebot-network
 
